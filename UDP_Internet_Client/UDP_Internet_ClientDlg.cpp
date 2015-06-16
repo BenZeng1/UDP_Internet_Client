@@ -62,6 +62,7 @@ BEGIN_MESSAGE_MAP(CUDP_Internet_ClientDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_BN_CLICKED(IDC_BUTTONCONNECT, &CUDP_Internet_ClientDlg::OnBnClickedconnect)
 END_MESSAGE_MAP()
 
 
@@ -97,7 +98,16 @@ BOOL CUDP_Internet_ClientDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
 	// TODO:  在此添加额外的初始化代码
-
+	//编辑框内添加预设值，未启用按钮设置不可用
+	SetDlgItemText(IDC_IP, _T("192.168.11.40"));
+	SetDlgItemText(IDC_PORT, _T("8000"));
+	SetDlgItemText(IDC_NAME, _T("gw10"));
+	SetDlgItemText(IDC_PW, _T("123"));
+	this->GetDlgItem(IDC_BUTTONDISCONNECT)->EnableWindow(FALSE);
+	this->GetDlgItem(IDC_BUTTONGET)->EnableWindow(FALSE);
+	this->GetDlgItem(IDC_BUTTONSHOW)->EnableWindow(FALSE);
+	this->GetDlgItem(IDC_BUTTONPUNCHING)->EnableWindow(FALSE);
+	this->GetDlgItem(IDC_BUTTONSEND)->EnableWindow(FALSE);
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 
@@ -150,3 +160,10 @@ HCURSOR CUDP_Internet_ClientDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+
+
+void CUDP_Internet_ClientDlg::OnBnClickedconnect()
+{
+	// TODO:  在此添加控件通知处理程序代码
+	this->GetDlgItem(IDC_BUTTONCONNECT)->EnableWindow(FALSE);
+}
