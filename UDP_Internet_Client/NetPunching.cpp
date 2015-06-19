@@ -92,10 +92,8 @@ DWORD WINAPI MsgReceive(LPVOID pParam){
 						CString str;
 						str = "Get Message...";
 						dlg->SetDlgItemText(IDC_Showstatus, str);
-						str = "";
-						dlg->SetDlgItemText(IDC_Receive, str);
 						str = msg.MsgContent;
-						dlg->SetDlgItemText(IDC_Receive, str);
+						dlg->SetRevBoxText("对方说：" + str);
 						break;
 			}
 			case LOGONIN_ACK:
@@ -380,6 +378,7 @@ VOID SendMsg(LPVOID pParam)
 		sendto(PrimaryUDP, (CHAR*)&msg, msgLength, 0, (sockaddr*)&p2premoteB, serverLens);
 	}
 
+	dlg->SetRevBoxText(_T("我自己：") + str);
 	dlg->SetDlgItemText(IDC_EDIT_SEND, "");
 }
 

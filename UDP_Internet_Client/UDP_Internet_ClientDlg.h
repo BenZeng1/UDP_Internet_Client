@@ -3,6 +3,7 @@
 //
 
 #pragma once
+#include "afxwin.h"
 
 
 // CUDP_Internet_ClientDlg ¶Ô»°¿ò
@@ -36,4 +37,6 @@ public:
 	afx_msg void OnBnClickedPunching();
 	afx_msg void OnBnClickeDisconnect();
 	afx_msg void OnBnClickedSend();
+	CEdit m_EidtRevBox;
+	void SetRevBoxText(CString strMsg);
 };

@@ -59,6 +59,7 @@ CUDP_Internet_ClientDlg::CUDP_Internet_ClientDlg(CWnd* pParent /*=NULL*/)
 void CUDP_Internet_ClientDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
+	DDX_Control(pDX, IDC_Receive, m_EidtRevBox);
 }
 
 BEGIN_MESSAGE_MAP(CUDP_Internet_ClientDlg, CDialogEx)
@@ -71,7 +72,6 @@ BEGIN_MESSAGE_MAP(CUDP_Internet_ClientDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTONPUNCHING, &CUDP_Internet_ClientDlg::OnBnClickedPunching)
 	ON_BN_CLICKED(IDC_BUTTONDISCONNECT, &CUDP_Internet_ClientDlg::OnBnClickeDisconnect)
 	ON_BN_CLICKED(IDC_BUTTONSEND, &CUDP_Internet_ClientDlg::OnBnClickedSend)
-
 END_MESSAGE_MAP()
 
 
@@ -261,4 +261,10 @@ void CUDP_Internet_ClientDlg::OnBnClickedSend()
 {
 	// TODO:  在此添加控件通知处理程序代码
 	SendMsg(this);
+}
+
+void CUDP_Internet_ClientDlg::SetRevBoxText(CString strMsg)
+{
+	m_EidtRevBox.SetSel(-1, -1);
+	m_EidtRevBox.ReplaceSel(strMsg + "\r\n");
 }
