@@ -70,6 +70,8 @@ BEGIN_MESSAGE_MAP(CUDP_Internet_ClientDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTONSHOW, &CUDP_Internet_ClientDlg::OnBnClickedShow)
 	ON_BN_CLICKED(IDC_BUTTONPUNCHING, &CUDP_Internet_ClientDlg::OnBnClickedPunching)
 	ON_BN_CLICKED(IDC_BUTTONDISCONNECT, &CUDP_Internet_ClientDlg::OnBnClickeDisconnect)
+	ON_BN_CLICKED(IDC_BUTTONSEND, &CUDP_Internet_ClientDlg::OnBnClickedSend)
+
 END_MESSAGE_MAP()
 
 
@@ -233,6 +235,7 @@ void CUDP_Internet_ClientDlg::OnBnClickedShow()
 	Show_Online(this);
 	GetDlgItem(IDC_BUTTONSHOW)->EnableWindow(FALSE);
 	GetDlgItem(IDC_BUTTONGET)->EnableWindow(TRUE);
+	GetDlgItem(IDC_BUTTONPUNCHING)->EnableWindow(TRUE);
 }
 
 
@@ -251,4 +254,11 @@ void CUDP_Internet_ClientDlg::OnBnClickeDisconnect()
 	this->SetDlgItemText(IDC_Showstatus, str);
 	DisConnectServer();
 	SetTimer(TIMER_COUNT2, 3000, NULL);
+}
+
+
+void CUDP_Internet_ClientDlg::OnBnClickedSend()
+{
+	// TODO:  在此添加控件通知处理程序代码
+	SendMsg(this);
 }

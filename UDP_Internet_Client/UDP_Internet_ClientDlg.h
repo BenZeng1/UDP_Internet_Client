@@ -35,4 +35,5 @@ public:
 	afx_msg void OnBnClickedShow();
 	afx_msg void OnBnClickedPunching();
 	afx_msg void OnBnClickeDisconnect();
+	afx_msg void OnBnClickedSend();
 };

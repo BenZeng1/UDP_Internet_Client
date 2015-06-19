@@ -96,6 +96,7 @@ DWORD WINAPI MsgReceive(LPVOID pParam){
 						dlg->SetDlgItemText(IDC_Receive, str);
 						str = msg.MsgContent;
 						dlg->SetDlgItemText(IDC_Receive, str);
+						break;
 			}
 			case LOGONIN_ACK:
 			{
@@ -178,8 +179,10 @@ DWORD WINAPI MsgReceive(LPVOID pParam){
 												 break;
 											 }
 										 }
-
 										 dlg->GetDlgItem(IDC_BUTTONSEND)->EnableWindow(TRUE);
+
+
+				
 
 										/* strcpy_s(user2, msg1.cName);
 										 strcpy_s(user1, Connect_msg.cName);
@@ -194,15 +197,46 @@ DWORD WINAPI MsgReceive(LPVOID pParam){
 			}
 			case PUNCHING_PASSMSG_S_A:
 			{
+										 CString str;
+										 str = "Get PUNCHING_ACK, P2P start...";
+										 dlg->SetDlgItemText(IDC_Showstatus, str);
+
+										 SetTimer(dlg->m_hWnd, TIMER_HEARTBEAT, 10000, NULL);
+
+										 stMessage msg = { 0 };
+										 memset(&msg, 0, msgLength);
+										 msg.MessageType = HEARTBEAT;
+										 sendto(PrimaryUDP, (CHAR*)&msg, msgLength, 0, (sockaddr*)&p2premoteB, serverLens);
+
+										 client_status.P2Pisalive = TRUE;
+										 client_status.P2Palive_count = 0;
+										 client_status.IsPunched = PUNCHINGED;
+
+										 dlg->GetDlgItem(IDC_BUTTONSEND)->EnableWindow(TRUE);
 
 										 break;
 			}
 			case HEARTBEAT_ACK:
 			{
+								  CString str;
+								  str = "Get HEARTBEAT_ACK... ";
+								  dlg->SetDlgItemText(IDC_Showstatus, str);
+								  client_status.P2Palive_count = 0;
+								  client_status.P2Pisalive = true;
 								  break;
 			}
 			case HEARTBEAT:
 			{
+							  CString str;
+							  str.Format(_T("Get HEARTBEAT, Sent HEARTBEAT_ACK "));
+							  dlg->SetDlgItemText(IDC_Showstatus, str);
+
+							  //
+							  memset(&msg, 0, msgLength);
+							  msg.MessageType = HEARTBEAT_ACK;
+							  sendto(PrimaryUDP, (char *)&msg, msgLength, 0, (sockaddr*)&p2premoteA, serverLens);
+							  client_status.P2Palive_count = 0;
+							  client_status.P2Pisalive = true;
 							  break;
 			}
 			
@@ -323,5 +357,29 @@ VOID CloseSession()
 		closesocket(PrimaryUDP);
 		WSACleanup();
 	}
+}
+
+VOID SendMsg(LPVOID pParam)
+{
+	CUDP_Internet_ClientDlg* dlg = (CUDP_Internet_ClientDlg*)pParam;
+	CString str;
+	stMessage msg = { 0 };
+	dlg->GetDlgItemText(IDC_EDIT_SEND, str);
+	LPTSTR s1 = str.GetBuffer();
+
+	memset(&msg, 0, msgLength);
+	msg.MessageType = MSG;
+	strcpy_s(msg.MsgContent, s1);
+	
+	if (client_status.IsPunched == ISPUNCHINGED)
+	{
+		sendto(PrimaryUDP, (CHAR*)&msg, msgLength, 0, (sockaddr*)&p2premoteA, serverLens);
+	}
+	else if ( client_status.IsPunched == PUNCHINGED)
+	{
+		sendto(PrimaryUDP, (CHAR*)&msg, msgLength, 0, (sockaddr*)&p2premoteB, serverLens);
+	}
+
+	dlg->SetDlgItemText(IDC_EDIT_SEND, "");
 }
 

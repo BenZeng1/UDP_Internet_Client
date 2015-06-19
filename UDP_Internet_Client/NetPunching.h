@@ -83,3 +83,4 @@ int GetUser_Online();
 VOID Show_Online(LPVOID pParam);
 VOID CloseSession();
 VOID Punching(LPVOID pParam);
+VOID SendMsg(LPVOID pParam);
