@@ -6,6 +6,9 @@
 #include "UDP_Internet_Client.h"
 #include "UDP_Internet_ClientDlg.h"
 #include "afxdialogex.h"
+#include "NetPunching.h"
+#include <string>
+#include <iostream>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -63,6 +66,9 @@ BEGIN_MESSAGE_MAP(CUDP_Internet_ClientDlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDC_BUTTONCONNECT, &CUDP_Internet_ClientDlg::OnBnClickedconnect)
+	ON_BN_CLICKED(IDC_BUTTONGET, &CUDP_Internet_ClientDlg::OnBnClickedGet)
+	ON_BN_CLICKED(IDC_BUTTONSHOW, &CUDP_Internet_ClientDlg::OnBnClickedShow)
+	ON_BN_CLICKED(IDC_BUTTONPUNCHING, &CUDP_Internet_ClientDlg::OnBnClickedPunching)
 END_MESSAGE_MAP()
 
 
@@ -99,7 +105,7 @@ BOOL CUDP_Internet_ClientDlg::OnInitDialog()
 
 	// TODO:  在此添加额外的初始化代码
 	//编辑框内添加预设值，未启用按钮设置不可用
-	SetDlgItemText(IDC_IP, _T("192.168.11.40"));
+	SetDlgItemText(IDC_IP, _T("172.16.1.137"));
 	SetDlgItemText(IDC_PORT, _T("8000"));
 	SetDlgItemText(IDC_NAME, _T("gw10"));
 	SetDlgItemText(IDC_PW, _T("123"));
@@ -166,4 +172,70 @@ void CUDP_Internet_ClientDlg::OnBnClickedconnect()
 {
 	// TODO:  在此添加控件通知处理程序代码
 	this->GetDlgItem(IDC_BUTTONCONNECT)->EnableWindow(FALSE);
+
+	if (SocketInit((LPVOID)this) == 0)
+	{
+		this->GetDlgItem(IDC_BUTTONDISCONNECT)->EnableWindow(TRUE);
+		return;
+	}
+
+	char host_name[225];
+	if (gethostname(host_name, sizeof(host_name)) == SOCKET_ERROR)
+	{
+
+	}
+	
+	struct  hostent	*phe = gethostbyname(host_name);
+	if (phe == 0)
+	{
+
+	}
+
+	in_addr addr;
+	memcpy(&addr, phe->h_addr_list[0], sizeof(in_addr));
+
+	CString str1;
+	CHAR *p = inet_ntoa(addr);
+	str1 = p;
+	this->SetDlgItemText(IDC_LOCALIP, str1);
+
+	CreateThread(0, 0, MsgReceive, this, 0, NULL);
+	Sleep(500);
+
+	CString str;
+	str = "等待服务器验证用户...";
+	this->SetDlgItemText(IDC_Showstatus, str);
+
+	Connect_proc();
+
+	this->GetDlgItem(IDC_BUTTONCONNECT)->EnableWindow(FALSE);
+	SetTimer(TIMER_COUNT1, 300, NULL);
+}
+
+
+void CUDP_Internet_ClientDlg::OnBnClickedGet()
+{
+	// 获取服务器端在线数据列表
+	CString str;
+	str = "获取服务器端在线数据...";
+	this->SetDlgItemText(IDC_Showstatus, str);
+	GetUser_Online();
+
+	GetDlgItem(IDC_BUTTONGET)->EnableWindow(FALSE);
+	GetDlgItem(IDC_BUTTONSHOW)->EnableWindow(TRUE);
+}
+
+
+void CUDP_Internet_ClientDlg::OnBnClickedShow()
+{
+	// TODO:  在此添加控件通知处理程序代码
+	//Show_Online(this);
+	GetDlgItem(IDC_BUTTONSHOW)->EnableWindow(FALSE);
+	GetDlgItem(IDC_BUTTONGET)->EnableWindow(TRUE);
+}
+
+
+void CUDP_Internet_ClientDlg::OnBnClickedPunching()
+{
+	// TODO:  在此添加控件通知处理程序代码
 }
