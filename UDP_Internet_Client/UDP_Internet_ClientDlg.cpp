@@ -69,6 +69,7 @@ BEGIN_MESSAGE_MAP(CUDP_Internet_ClientDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTONGET, &CUDP_Internet_ClientDlg::OnBnClickedGet)
 	ON_BN_CLICKED(IDC_BUTTONSHOW, &CUDP_Internet_ClientDlg::OnBnClickedShow)
 	ON_BN_CLICKED(IDC_BUTTONPUNCHING, &CUDP_Internet_ClientDlg::OnBnClickedPunching)
+	ON_BN_CLICKED(IDC_BUTTONDISCONNECT, &CUDP_Internet_ClientDlg::OnBnClickeDisconnect)
 END_MESSAGE_MAP()
 
 
@@ -105,7 +106,7 @@ BOOL CUDP_Internet_ClientDlg::OnInitDialog()
 
 	// TODO:  在此添加额外的初始化代码
 	//编辑框内添加预设值，未启用按钮设置不可用
-	SetDlgItemText(IDC_IP, _T("172.16.1.137"));
+	SetDlgItemText(IDC_IP, _T("172.16.1.131"));
 	SetDlgItemText(IDC_PORT, _T("8000"));
 	SetDlgItemText(IDC_NAME, _T("gw10"));
 	SetDlgItemText(IDC_PW, _T("123"));
@@ -229,7 +230,7 @@ void CUDP_Internet_ClientDlg::OnBnClickedGet()
 void CUDP_Internet_ClientDlg::OnBnClickedShow()
 {
 	// TODO:  在此添加控件通知处理程序代码
-	//Show_Online(this);
+	Show_Online(this);
 	GetDlgItem(IDC_BUTTONSHOW)->EnableWindow(FALSE);
 	GetDlgItem(IDC_BUTTONGET)->EnableWindow(TRUE);
 }
@@ -238,4 +239,16 @@ void CUDP_Internet_ClientDlg::OnBnClickedShow()
 void CUDP_Internet_ClientDlg::OnBnClickedPunching()
 {
 	// TODO:  在此添加控件通知处理程序代码
+	Punching(this);
+}
+
+
+void CUDP_Internet_ClientDlg::OnBnClickeDisconnect()
+{
+	// TODO:  在此添加控件通知处理程序代码
+	CString str;
+	str = "等待服务器登出确认...";
+	this->SetDlgItemText(IDC_Showstatus, str);
+	DisConnectServer();
+	SetTimer(TIMER_COUNT2, 3000, NULL);
 }

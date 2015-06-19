@@ -78,5 +78,8 @@ struct sLoginlUser
 int SocketInit(LPVOID pParam);
 DWORD WINAPI MsgReceive(LPVOID pParam);
 BOOL Connect_proc();
+BOOL DisConnectServer();
 int GetUser_Online();
 VOID Show_Online(LPVOID pParam);
+VOID CloseSession();
+VOID Punching(LPVOID pParam);

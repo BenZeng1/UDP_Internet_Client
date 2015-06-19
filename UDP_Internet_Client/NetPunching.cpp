@@ -13,6 +13,9 @@ sockaddr_in p2premoteA;
 sockaddr_in p2premoteB;
 sockaddr_in temp;
 
+char user1[10] = { 0 };
+char user2[10] = { 0 };
+
 int serverLens, msgLength;
 sLoginlUser LogInUserTable[10] = { 0 };
 
@@ -94,11 +97,6 @@ DWORD WINAPI MsgReceive(LPVOID pParam){
 						str = msg.MsgContent;
 						dlg->SetDlgItemText(IDC_Receive, str);
 			}
-			case PUNCHING_PASSMSG_S_B:
-			{
-										 
-										 break;
-			}
 			case LOGONIN_ACK:
 			{
 								CString str;
@@ -115,11 +113,89 @@ DWORD WINAPI MsgReceive(LPVOID pParam){
 			}
 			case LOGONOUT_ACK:
 			{
+								 CString str;
+								 str = "退出UDP服务器成功!";
+								 dlg->SetDlgItemText(IDC_Showstatus, str);
+								 CloseSession();
+								 client_status.ConUDPServer = FALSE;
+								 KillTimer(dlg->m_hWnd, TIMER_COUNT2);
+								 dlg->GetDlgItem(IDC_BUTTONCONNECT)->EnableWindow(TRUE);
+								 dlg->GetDlgItem(IDC_BUTTONDISCONNECT)->EnableWindow(FALSE);
+								 dlg->GetDlgItem(IDC_BUTTONGET)->EnableWindow(FALSE);
 								 break;
 			}
 			case  USRE_FULL:
 			{
 							   break;
+			}
+			case GETUSERONLINE_ACK:
+			{
+									  CString str;
+									  str = "GETUSERONLINE_ACK, 得到登陆用户";
+									  dlg->SetDlgItemText(IDC_Showstatus, str);
+
+									  for (int i = 0; i < sizeof(LogInUserTable)/sizeof(sLoginlUser); i++)
+									  {
+										  if (LogInUserTable[i].username[0] == 0)
+										  {
+										  strcpy_s(LogInUserTable[i].username, msg.cName);
+										  LogInUserTable[i].ip = msg.ip;
+										  LogInUserTable[i].port = msg.port;
+										  break;
+										  }
+									  }
+									  break;
+			}
+			case PUNCHING_PASSMSG_S_B:
+			{
+										 p2premoteA.sin_addr.S_un.S_addr = htonl(msg.ip);
+										 p2premoteA.sin_family = AF_INET;
+										 p2premoteA.sin_port = htons(msg.port);
+
+										 stMessage msg1 = { 0 };
+										 memcpy(&msg1, &msg, sizeof(stMessage));
+
+										 CString str;
+										 str = "Get S_B,Sent B_A,Sent B_S \n";
+										 dlg->SetDlgItemText(IDC_Showstatus, str);
+
+										 memset(&msg, 0, msgLength);
+										 msg.MessageType = PUNCHING_PASSMSG_B_A;
+										 ret = sendto(PrimaryUDP, (CHAR*)&msg, msgLength, 0, (struct sockaddr*)&p2premoteA, serverLens);
+
+										 msg1.MessageType = PUNCHING_PASSMSG_B_S;
+										 temp.sin_family = AF_INET;
+										 ret = sendto(PrimaryUDP, (CHAR*)&msg1, msgLength, 0, (struct sockaddr*)&temp, serverLens);
+										 client_status.IsPunched = ISPUNCHINGED;
+
+										 for (int i = 0; LogInUserTable[i].ip != 0; i++)
+										 {
+											 if (strcmp(LogInUserTable[i].username, Connect_msg.cName) == 0)
+											 {
+												 p2premoteB.sin_addr.S_un.S_addr = htonl(LogInUserTable[i].ip);
+												 p2premoteB.sin_family = AF_INET;
+												 p2premoteB.sin_port = htons(LogInUserTable[i].port);
+												 break;
+											 }
+										 }
+
+										 dlg->GetDlgItem(IDC_BUTTONSEND)->EnableWindow(TRUE);
+
+										/* strcpy_s(user2, msg1.cName);
+										 strcpy_s(user1, Connect_msg.cName);
+										 
+										 CString strUser1, strUser2;
+										 strUser1 = "User1:";
+										 strUser2 = "User2:";
+										 str = strUser1 + user1;
+										 dlg->SetDlgItemText()*/
+										
+										 break;
+			}
+			case PUNCHING_PASSMSG_S_A:
+			{
+
+										 break;
 			}
 			case HEARTBEAT_ACK:
 			{
@@ -129,24 +205,7 @@ DWORD WINAPI MsgReceive(LPVOID pParam){
 			{
 							  break;
 			}
-			case PUNCHING_PASSMSG_S_A:
-			{
-										 break;
-			}
-			case GETUSERONLINE_ACK:
-			{
-									  CString str;
-									  str = "GETUSERONLINE_ACK, 得到登陆用户";
-									  dlg->SetDlgItemText(IDC_Showstatus, str);
-
-									  for (int i = 0; i < sizeof(LogInUserTable) / sizeof(sLoginlUser);i++)
-									  {
-										  strcpy_s(LogInUserTable[i].username, msg.cName);
-										  LogInUserTable[i].ip = msg.ip;
-										  LogInUserTable[i].port = msg.port;
-									  }
-									  break;
-			}
+			
 			default:
 				break;
 		}
@@ -173,38 +232,96 @@ INT GetUser_Online()
 	return 0;
 }
 
-/*
 VOID Show_Online(LPVOID pParam)
 {
 	CUDP_Internet_ClientDlg* dlg = (CUDP_Internet_ClientDlg*)pParam;
 	CString str;
 	str = "";
-	dlg->SetDlgItemText(IDC_OnlineUserList, str);
+	//dlg->SetDlgItemText(IDC_OnlineUserList, str);
 	sockaddr_in temp;
 	for (int i = 0; LogInUserTable[i].ip != 0; i++)
 	{
-		CString str1;
+		CString str1, strTab, strEnt;
+		strTab = "\t";
+		strEnt = "\n\r";
 		temp.sin_addr.s_addr = htonl(LogInUserTable[i].ip);
 		CHAR *p = inet_ntoa(temp.sin_addr);
 		str1 = p;
 
 		CHAR p2[15];
 		CString str2;
-		itoa(LogInUserTable[i].port, p2, 10);
+		_itoa_s(LogInUserTable[i].port, p2, 10);
 		str2 = p2;
 
 		CHAR *p4 = LogInUserTable[i].username;
 		CString str3;
 		str3 = p4;
-		str = str + str1 + str2 + str3;
+		str = str + str1 +strTab + str2 + strTab + str3 + strEnt;
 	}
 	dlg->SetDlgItemText(IDC_OnlineUserList, str);
 }
-*/
+
 
 VOID Punching(LPVOID pParam)
 {
+	stMessage msg = { 0 };
+	CUDP_Internet_ClientDlg* dlg = (CUDP_Internet_ClientDlg*)pParam;
 
+	CString str;
+	str = "Punching...";
+	dlg->SetDlgItemText(IDC_Showstatus, str);
+
+	CString strGetName;
+	dlg->GetDlgItemText(IDC_PunchingName, strGetName);
+	LPTSTR sGetName = strGetName.GetBuffer();
+	for (int i = 0; LogInUserTable[i].ip != 0; i++)
+	{
+		if (strcmp(LogInUserTable[i].username, sGetName) == 0 )
+		{
+			p2premoteB.sin_addr.S_un.S_addr = htonl(LogInUserTable[i].ip);
+			p2premoteB.sin_family = AF_INET;
+			p2premoteB.sin_port = htons(LogInUserTable[i].port);
+			strcpy_s(user2, LogInUserTable[i].username);
+			strcpy_s(user1, Connect_msg.cName);
+			msg.MessageType = PUNCHING_PASSMSG_A_S;
+			strcpy_s(msg.cName, Connect_msg.cName);
+			msg.ip = LogInUserTable[i].ip;
+			msg.port = LogInUserTable[i].port;
+			break;
+		}
+	}
+	for (int i = 0; LogInUserTable[i].ip != 0; i++)
+	{
+		if (strcmp(LogInUserTable[i].username, Connect_msg.cName) == 0)
+		{
+			p2premoteA.sin_addr.S_un.S_addr = htonl(LogInUserTable[i].ip);
+			p2premoteA.sin_family = AF_INET;
+			p2premoteA.sin_port = htons(LogInUserTable[i].port);
+			break;
+		}
+	}
+
+	client_status.IsPunched = NOPUNCHING;
+	sendto(PrimaryUDP, (CHAR*)&msg, msgLength, 0, (sockaddr*)&server, serverLens);
+	return;
 }
 
+BOOL DisConnectServer()
+{
+	if (client_status.ConUDPServer == true)
+	{
+		Connect_msg.MessageType = LOGONOUT;
+		sendto(PrimaryUDP, (CHAR *)&Connect_msg, msgLength, 0, (sockaddr*)&server, serverLens);
+	}
+	return FALSE;
+}
+
+VOID CloseSession()
+{
+	if (PrimaryUDP > 0)
+	{
+		closesocket(PrimaryUDP);
+		WSACleanup();
+	}
+}
 
